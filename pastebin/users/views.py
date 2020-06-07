@@ -81,8 +81,7 @@ class UserInfo(SAModelMixin, HTTPEndpoint):
         })
 
     def delete(self, request: Request) -> PlainTextResponse:
-        db = request.state.db
         user = self.get_model_by_id(request, User, request.path_params['id'])
-        db.delete(user)
+        request.state.db.delete(user)
         transaction.commit()
         return PlainTextResponse('', status_code=204)
