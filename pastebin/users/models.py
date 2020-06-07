@@ -1,19 +1,16 @@
 import bcrypt
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, String, Text
 from sqlalchemy_utils import EmailType
 
 from pastebin.meta import Base
 
 
 class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    pseudo = Column(String)
-    email = Column(EmailType)
-    password_hash = Column(Text, name='password')
+    first_name = Column(String(100), nullable=False)
+    last_name = Column(String(100), nullable=False)
+    pseudo = Column(String(100), unique=True, index=True, nullable=False)
+    email = Column(EmailType, unique=True, index=True, nullable=False)
+    password_hash = Column(Text, name='password', nullable=False)
 
     def set_password(self, pw):
         _hash = bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())

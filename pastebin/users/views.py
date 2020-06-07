@@ -16,7 +16,8 @@ class Users(HTTPEndpoint):
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'email': user.email,
-                'pseudo': user.pseudo
+                'pseudo': user.pseudo,
+                'created_at': str(user.created_at)
             } for user in users
         ]
         return JSONResponse(data)
@@ -25,7 +26,9 @@ class Users(HTTPEndpoint):
     async def post(request: Request):
         db = request.state.db
         payload = await request.json()
+        password = payload.pop('password')
         user = User(**payload)
+        user.set_password(password)
         db.add(user)
         db.flush()
         data = {
@@ -33,7 +36,8 @@ class Users(HTTPEndpoint):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
-            'pseudo': user.pseudo
+            'pseudo': user.pseudo,
+            'created_at': user.created_at
         }
         return JSONResponse(data, status_code=201)
 

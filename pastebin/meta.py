@@ -14,14 +14,16 @@ NAMING_CONVENTION = {
 }
 
 
+# noinspection PyMethodParameters
 class DefaultBase:
-    @classmethod
+
     @declared_attr
     def __tablename__(cls):
         return f'{cls.__name__.lower()}s'
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, default=func.now(), nullable=False)
+    updated_at = Column(DateTime, nullable=True)
 
 
 metadata = MetaData(naming_convention=NAMING_CONVENTION)
