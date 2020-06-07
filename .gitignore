@@ -1,0 +1,17 @@
+.idea
+.pytest_cache
+.coverage
+htmlcov
+.env
+.python-version
+pastebin.db
+
+# byte-compiled / optimized
+__pycache__
+*.pyc
+*.egg-info
+
+# packaging / distribution
+site
+dist
+build
