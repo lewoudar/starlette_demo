@@ -21,7 +21,7 @@ def test_get_users(client):
 
 
 def create_user(client, data):
-    return client.post(app.url_path_for('user_detail'), json=data)
+    return client.post(app.url_path_for('user_list'), json=data)
 
 
 def test_post_user(client):
@@ -38,9 +38,23 @@ def test_post_user(client):
     result = response.json()
     assert_in_dict(data, result)
     try:
-        datetime.strptime(result['created_at'], '%Y:%m:%d %H:%M%S')
+        datetime.strptime(result['created_at'], '%Y-%m-%d %H:%M:%S')
     except (KeyError, ValueError):
         pytest.fail('fail to retrieve create_at information')
+
+
+def test_get_user(client):
+    response = client.get(app.url_path_for('user_detail', id=1))
+    assert 200 == response.status_code
+    data = {
+        'first_name': 'Kevin',
+        'last_name': 'Tewouda',
+        'pseudo': 'lewoudar',
+        'email': 'foo@gmail.com',
+        'created_at': '2020-06-07 16:00:00',
+        'id': 1
+    }
+    assert data == response.json()
 
 
 def test_put_user(client):
@@ -51,9 +65,16 @@ def test_put_user(client):
         'email': 'john.doe@gmail.com',
         'password': 'pass'
     }
-    create_user(client, data)
+    response = create_user(client, data)
     data.pop('password')
     data['pseudo'] = 'johnd'
-    response = client.put(app.url_path_for('user_detail'), json=data)
+    response = client.put(app.url_path_for('user_detail', id=response.json()['id']), json=data)
     assert 200 == response.status_code
     assert_in_dict(data, response.json())
+
+
+def test_delete_user(client):
+    response = client.delete(app.url_path_for('user_detail', id=1))
+    assert 204 == response.status_code
+    response = client.get(app.url_path_for('user_detail', id=1))
+    assert 404 == response.status_code

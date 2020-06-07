@@ -12,7 +12,7 @@ from pastebin.settings import TEST_DATABASE_URL
 from .utils import create_test_objects
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(autouse=True)
 def create_test_database():
     """
     Create a clean database on every test case.
