@@ -1,5 +1,5 @@
 import bcrypt
-from sqlalchemy import Column, String, Boolean, Table, ForeignKey
+from sqlalchemy import Column, String, Boolean, Table, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import EmailType
 
@@ -8,13 +8,15 @@ from pastebin.meta import Base
 user_groups = Table(
     'user_groups', Base.metadata,
     Column('user_id', ForeignKey('users.id'), primary_key=True),
-    Column('group_id', ForeignKey('groups.id'), primary_key=True)
+    Column('group_id', ForeignKey('groups.id'), primary_key=True),
+    Column('created_at', DateTime, default=func.now(), nullable=False)
 )
 
 group_permissions = Table(
     'group_permissions', Base.metadata,
     Column('group_id', ForeignKey('groups.id'), primary_key=True),
-    Column('permission_id', ForeignKey('permissions.id'), primary_key=True)
+    Column('permission_id', ForeignKey('permissions.id'), primary_key=True),
+    Column('created_at', DateTime, default=func.now(), nullable=False)
 )
 
 

@@ -10,8 +10,7 @@ packages = [
 ]
 
 [tool.poetry.scripts]
-"init-db" = 'pastebin.scripts:initialize_database'
-shell = 'pastebin.scripts:shell'
+manage = 'pastebin.scripts:cli'
 
 [tool.poetry.dependencies]
 python = "^3.8"

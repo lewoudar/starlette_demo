@@ -5,6 +5,8 @@ from sqlalchemy.schema import MetaData
 # Recommended naming convention used by Alembic, as various different database
 # providers will auto-generate vastly different names making migrations more
 # difficult. See: https://alembic.sqlalchemy.org/en/latest/naming.html
+# There is a slight difference for "ck" property due to an error related to boolean
+# values. See: https://github.com/sqlalchemy/sqlalchemy/issues/4784
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
