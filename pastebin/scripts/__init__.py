@@ -3,7 +3,6 @@ import code
 import click
 import transaction
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 from zope.sqlalchemy import register
 
@@ -11,6 +10,7 @@ import pastebin
 from pastebin.meta import Base
 from pastebin.settings import DATABASE_URL
 from pastebin.users.models import User
+from pastebin.utils import get_session
 
 
 @click.group()
@@ -31,12 +31,6 @@ def initialize_database(url):
     engine = create_engine(database_url)
     Base.metadata.create_all(engine)
     click.echo('finished initialization')
-
-
-def get_session(database_url):
-    engine = create_engine(database_url, connect_args={'check_same_thread': False})
-    session_class = sessionmaker(bind=engine)
-    return session_class()
 
 
 @cli.command()

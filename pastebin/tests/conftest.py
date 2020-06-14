@@ -2,13 +2,13 @@ import pytest
 import transaction
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from starlette.testclient import TestClient
 from sqlalchemy_utils import database_exists, create_database, drop_database
+from starlette.testclient import TestClient
 from zope.sqlalchemy import register
 
 from pastebin import app
-from pastebin.users.models import Base
 from pastebin.settings import TEST_DATABASE_URL
+from pastebin.users.models import Base
 from .utils import create_test_objects
 
 
@@ -27,6 +27,7 @@ def create_test_database():
     Base.metadata.create_all(engine)
     create_test_objects(db)
     yield
+    db.close()
     drop_database(TEST_DATABASE_URL)
 
 
