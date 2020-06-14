@@ -78,16 +78,16 @@ def test_get_user(client):
     assert data == response.json()
 
 
-class TestPutUser:
+class TestPatchUser:
 
     def test_should_return_403_error_when_user_is_not_authenticated(self, client):
-        response = client.put(app.url_path_for('user_detail', id=1))
+        response = client.patch(app.url_path_for('user_detail', id=1))
         assert 403 == response.status_code
 
     def test_should_return_403_error_when_user_does_not_have_ownership(self, client, user_data):
         create_user(client, user_data)
         changed = {'first_name': 'JA rule'}
-        response = client.put(app.url_path_for('user_detail', id=1), json=changed, auth=('elliot', 'missy'))
+        response = client.patch(app.url_path_for('user_detail', id=1), json=changed, auth=('elliot', 'missy'))
         assert 403 == response.status_code
         assert {'detail': 'user elliot does not have rights to edit this resource'} == response.json()
 
@@ -95,7 +95,7 @@ class TestPutUser:
     def test_should_return_401_error_when_user_is_not_recognized(self, client, auth, user_data):
         create_user(client, user_data)
         changed = {'first_name': 'JA rule'}
-        response = client.put(app.url_path_for('user_detail', id=1), json=changed, auth=auth)
+        response = client.patch(app.url_path_for('user_detail', id=1), json=changed, auth=auth)
         assert 401 == response.status_code
         assert {'detail': 'pseudo or password incorrect'} == response.json()
 
@@ -107,7 +107,7 @@ class TestPutUser:
         response = create_user(client, user_data)
         user_id = response.json()['id']
         changed = {'first_name': 'JA rule'}
-        response = client.put(app.url_path_for('user_detail', id=user_id), json=changed, auth=auth)
+        response = client.patch(app.url_path_for('user_detail', id=user_id), json=changed, auth=auth)
         assert 200 == response.status_code
         response_data = response.json()
         assert response_data['first_name'] == 'JA rule'

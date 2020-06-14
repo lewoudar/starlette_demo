@@ -65,7 +65,7 @@ class UserInfo(SAModelMixin, HTTPEndpoint):
         })
 
     @requires(['authenticated', 'users:write'])
-    async def put(self, request: Request) -> JSONResponse:
+    async def patch(self, request: Request) -> JSONResponse:
         user = self.get_model_by_id(request, User, request.path_params['id'])
         self.check_ownership(request, user)
         payload = await request.json()
