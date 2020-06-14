@@ -5,11 +5,9 @@ import binascii
 from starlette.authentication import AuthenticationBackend, AuthenticationError, AuthCredentials
 from starlette.responses import JSONResponse
 
-from pastebin.settings import DATABASE_URL, TESTING, TEST_DATABASE_URL
+from pastebin.settings import DATABASE_URL
 from pastebin.users.models import User
 from pastebin.utils import get_session
-
-database_url = TEST_DATABASE_URL if TESTING else DATABASE_URL
 
 
 class BasicAuthBackend(AuthenticationBackend):
@@ -27,7 +25,7 @@ class BasicAuthBackend(AuthenticationBackend):
             raise AuthenticationError('Invalid basic auth credentials')
 
         pseudo, _, password = decoded.partition(':')
-        db = get_session(database_url)
+        db = get_session(DATABASE_URL)
         user = db.query(User).filter(User.pseudo == pseudo).one_or_none()
         if user is None or not user.check_password(password):
             db.close()
