@@ -8,8 +8,8 @@ from zope.sqlalchemy import register
 
 import pastebin
 from pastebin.meta import Base
-from pastebin.settings import DATABASE_URL
-from pastebin.users.models import User
+from pastebin.settings import DATABASE_URL, DEFAULT_USER_GROUP, DEFAULT_PERMISSIONS
+from pastebin.users.models import User, Group, Permission
 from pastebin.utils import get_session
 
 
@@ -60,6 +60,12 @@ def create_admin_user(first_name, last_name, pseudo, password, email):
     with transaction.manager:
         user = User(email=email, pseudo=pseudo, first_name=first_name, last_name=last_name, admin=True)
         user.set_password(password)
+        default_group = db.query(Group).filter_by(name=DEFAULT_USER_GROUP).one_or_none()
+        if default_group is None:
+            default_group = Group(name=DEFAULT_USER_GROUP)
+            for name in DEFAULT_PERMISSIONS:
+                default_group.permissions.append(Permission(name=name))
+        user.groups.append(default_group)
         db.add(user)
     db.close()
     click.secho(f'created admin user {pseudo}!', fg='blue')
