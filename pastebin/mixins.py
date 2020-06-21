@@ -1,7 +1,9 @@
+from marshmallow import ValidationError
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
 from pastebin.users.models import User, Base as Model
+from .exceptions import BadRequestError
 
 
 class SAModelMixin:
@@ -21,3 +23,14 @@ class SAModelMixin:
             raise HTTPException(
                 403, f'user {request.user.pseudo} does not have rights to edit this resource'
             )
+
+
+class ErrorSchemaMixin:
+    @staticmethod
+    def handle_error(exc: ValidationError, data: dict, **_) -> None:
+        if '_schema' in exc.messages:
+            exc.messages['schema'] = exc.messages.pop('_schema')
+        raise BadRequestError({
+            'input': data,
+            'errors': exc.messages
+        })

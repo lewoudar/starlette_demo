@@ -1,5 +1,4 @@
-from datetime import datetime
-
+import dateutil.parser
 import pytest
 
 from pastebin import app
@@ -26,7 +25,7 @@ def test_get_users(client):
             'last_name': 'Tewouda',
             'pseudo': 'lewoudar',
             'email': 'kevin@gmail.com',
-            'created_at': '2020-06-07 16:00:00',
+            'created_at': '2020-06-07T16:00:00',
             'id': 1
         },
         {
@@ -34,7 +33,7 @@ def test_get_users(client):
             'last_name': 'Doe',
             'pseudo': 'admin',
             'email': 'johnd@gmail.com',
-            'created_at': '2020-06-07 16:00:00',
+            'created_at': '2020-06-07T16:00:00',
             'id': 2
         }
     ]
@@ -45,23 +44,44 @@ def create_user(client, data):
     return client.post(app.url_path_for('user_list'), json=data)
 
 
-def test_post_user(client):
-    data = {
-        'first_name': 'John',
-        'last_name': 'Doe',
-        'pseudo': 'zoro',
-        'email': 'john.doe@gmail.com',
-        'password': 'pass'
-    }
-    response = create_user(client, data)
-    assert 201 == response.status_code
-    data.pop('password')
-    result = response.json()
-    assert_in_dict(data, result)
-    try:
-        datetime.strptime(result['created_at'], '%Y-%m-%d %H:%M:%S')
-    except (KeyError, ValueError):
-        pytest.fail('fail to retrieve create_at information')
+class TestPostUser:
+    def test_should_return_400_error_code_when_payload_is_incorrect(self, client):
+        data = {
+            'email': 'hell',
+            'first_name': 'b',
+            'last_name': 'bar',
+            'password': 'hello'
+        }
+        response = create_user(client, data)
+        assert 400 == response.status_code
+        assert response.json() == {
+            'detail': {
+                'errors': {
+                    'email': ['Not a valid email address.'],
+                    'first_name': ['Length must be between 2 and 100.'],
+                    'pseudo': ['Missing data for required field.'],
+                },
+                'input': data
+            }
+        }
+
+    def test_should_correctly_create_user(self, client):
+        data = {
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'pseudo': 'zoro',
+            'email': 'john.doe@gmail.com',
+            'password': 'pass'
+        }
+        response = create_user(client, data)
+        assert 201 == response.status_code
+        data.pop('password')
+        result = response.json()
+        assert_in_dict(data, result)
+        try:
+            dateutil.parser.parse(result['created_at'])
+        except (KeyError, ValueError):
+            pytest.fail('fail to retrieve create_at information')
 
 
 def test_get_user(client):
@@ -72,7 +92,7 @@ def test_get_user(client):
         'last_name': 'Tewouda',
         'pseudo': 'lewoudar',
         'email': 'kevin@gmail.com',
-        'created_at': '2020-06-07 16:00:00',
+        'created_at': '2020-06-07T16:00:00',
         'id': 1
     }
     assert data == response.json()
@@ -98,6 +118,28 @@ class TestPatchUser:
         response = client.patch(app.url_path_for('user_detail', id=1), json=changed, auth=auth)
         assert 401 == response.status_code
         assert {'detail': 'pseudo or password incorrect'} == response.json()
+
+    def test_should_return_400_error_when_payload_is_empty(self, client):
+        data = {}
+        response = client.patch(app.url_path_for('user_detail', id=1), json=data, auth=('lewoudar', 'bar'))
+        assert 400 == response.status_code
+        assert response.json() == {
+            'detail': {
+                'errors': {'schema': ['payload must not be empty']},
+                'input': data
+            }
+        }
+
+    def test_should_return_400_error_when_payload_is_incorrect(self, client):
+        data = {'email': 'hell@fear'}
+        response = client.patch(app.url_path_for('user_detail', id=1), json=data, auth=('lewoudar', 'bar'))
+        assert 400 == response.status_code
+        assert response.json() == {
+            'detail': {
+                'errors': {'email': ['Not a valid email address.']},
+                'input': data
+            }
+        }
 
     @pytest.mark.parametrize('auth', [
         ('elliot', 'missy'),  # owner

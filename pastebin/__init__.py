@@ -1,18 +1,18 @@
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
-from starlette.routing import Mount
 from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.routing import Mount
 
+from .auth import BasicAuthBackend, on_auth_error
+from .exceptions import http_exception, client_error, ClientError
 from .middlewares import DBSessionMiddleware
 from .settings import DATABASE_URL
-from .exceptions import http_exception
-from .auth import BasicAuthBackend, on_auth_error
 from .users.urls import routes as user_routes
 
-
 exception_handlers = {
-    HTTPException: http_exception
+    HTTPException: http_exception,
+    ClientError: client_error
 }
 
 _middlewares = [
