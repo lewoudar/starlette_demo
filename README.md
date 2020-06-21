@@ -2,7 +2,7 @@
 
 This project aims to learn [starlette](https://www.starlette.io/) framework by reproducing
 the [tutorial](https://www.django-rest-framework.org/tutorial/1-serialization/) of Django Rest Framework which
-is an api where you can show some python sample code.
+is an api where you can show some python code snippets.
 
 ## Installation
 - Make sure you have python3.8 or upper installed.
@@ -30,5 +30,11 @@ It will also create a default user group if one does not exist.
 
 ## Running the api
 First make sure environment variable `TESTING` is set to `false`.
+
 After you can run `uvicorn pastebin:app`.
 
+## Using the api
+You can access the openapi specification on the following url: `http://localhost:8000/schema`.
+
+Copy and paste the downloaded file on the openapi [editor](https://editor.swagger.io/) and you will see all available
+operations

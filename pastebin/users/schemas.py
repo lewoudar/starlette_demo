@@ -7,13 +7,13 @@ from .models import User
 
 
 class DefaultUserSchema(ErrorSchemaMixin, Schema):
-    id = fields.Integer(dump_only=True)
+    id = fields.Integer(required=True, dump_only=True)
     first_name = fields.String(required=True, validate=validate.Length(min=2, max=100))
     last_name = fields.String(required=True, validate=validate.Length(min=2, max=100))
     pseudo = fields.String(required=True, validate=validate.Length(min=2, max=100))
     email = fields.Email(required=True)
     password = fields.String(required=True, load_only=True, validate=validate.Length(min=4, max=100))
-    created_at = fields.DateTime(dump_only=True)
+    created_at = fields.DateTime(required=True, dump_only=True)
 
     @post_load()
     def get_user(self, data: dict, **_) -> User:
