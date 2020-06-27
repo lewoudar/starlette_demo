@@ -42,12 +42,15 @@ paths:
                 $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/BadRequest'
+  /users/{id}:
     patch:
       tags:
         - users
       security:
         - BasicAuth: []
       description: Update user properties. You can update one or multiple properties at the same time.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
       requestBody:
         required: true
         content:
@@ -72,6 +75,8 @@ paths:
         - users
       security:
         - BasicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
       description: Deletes a user
       responses:
         '204':
@@ -80,6 +85,36 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /snippets/languages:
+    get:
+      tags:
+        - snippets
+      description: Returns the list of languages supported
+      parameters:
+        - $ref: '#/components/parameters/NameParam'
+      responses:
+        '200':
+          description: Returns a JSON list of languages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Languages'
+  /snippets/styles:
+    get:
+      tags:
+        - snippets
+      description: Returns the list of highlight styles supported
+      parameters:
+        - $ref: '#/components/parameters/NameParam'
+      responses:
+        '200':
+          description: Returns a JSON list of styles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Styles'
+
 
 components:
   schemas:
@@ -132,6 +167,14 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/User'
+    Languages:
+      type: array
+      items:
+        type: string
+    Styles:
+      type: array
+      items:
+        type: string
     SimpleError:
       type: object
       properties:
@@ -183,6 +226,30 @@ components:
               - detail
     DeleteResponse:
       description: The resource was deleted
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      description: numeric id of the resource to get, update or delete
+      required: true
+      example: 1
+      schema:
+        type: integer
+    NameParam:
+      name: name
+      in: query
+      required: false
+      description: |
+        This query parameter will help you to filter results in the list. You can use glob-style patterns to help you.
+        For example these characters have special meaning:
+        * "?" means zero or one character. For example if you search with value **p?thon**, possible response values
+        are **pthon**, **python**, **pethon**, etc..
+        * "*" means 0 or more characters in a row. For example if you search with value **p\*** possible response
+        values are **python**, **php**, **powershell**, etc..
+      schema:
+        type: string
+      example: python
 
   securitySchemes:
     BasicAuth:
