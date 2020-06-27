@@ -1,4 +1,5 @@
 from starlette.routing import Route
+
 from .views import Users, UserInfo
 
 routes = [

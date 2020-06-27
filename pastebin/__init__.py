@@ -10,6 +10,7 @@ from .middlewares import DBSessionMiddleware
 from .openapi import openapi_schema
 from .settings import DATABASE_URL
 from .users.urls import routes as user_routes
+from .snippets.urls import routes as snippet_routes
 
 exception_handlers = {
     HTTPException: http_exception,
@@ -25,6 +26,7 @@ app = Starlette(
     debug=True,
     routes=[
         Mount('/users', routes=user_routes),
+        Mount('/snippets', routes=snippet_routes),
         Route('/schema', endpoint=openapi_schema, include_in_schema=False)
     ],
     middleware=_middlewares,

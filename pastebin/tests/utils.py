@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from pastebin.settings import DEFAULT_USER_GROUP, DEFAULT_PERMISSIONS
 from pastebin.users.models import User, Group, Permission
+from pastebin.snippets.models import Language, Style, LANGUAGES, STYLES
 
 
 # noinspection PyArgumentList
@@ -25,6 +26,15 @@ def create_test_objects(db: Session):
         kevin_user.groups.append(default_group)
         admin_user.groups.append(default_group)
         db.add_all([kevin_user, admin_user, default_group])
+
+        # languages
+        for lang in LANGUAGES:
+            language = Language(name=lang)
+            db.add(language)
+        # styles
+        for name in STYLES:
+            style = Style(name=name)
+            db.add(style)
 
 
 def assert_in_dict(dict1: dict, dict2: dict):
