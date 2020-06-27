@@ -8,7 +8,8 @@ from zope.sqlalchemy import register
 
 import pastebin
 from pastebin.meta import Base
-from pastebin.settings import DATABASE_URL, DEFAULT_USER_GROUP, DEFAULT_PERMISSIONS
+from pastebin.settings import REAL_DATABASE_URL, DEFAULT_USER_GROUP, DEFAULT_PERMISSIONS
+from pastebin.snippets.models import Language, Style, LANGUAGES, STYLES
 from pastebin.users.models import User, Group, Permission
 from pastebin.utils import get_session
 
@@ -22,7 +23,7 @@ def cli():
 @click.option('-u', '--url', help='database url used by sqlalchemy')
 def initialize_database(url):
     """Creates the database if it does not exist"""
-    database_url = DATABASE_URL if url is None else url
+    database_url = REAL_DATABASE_URL if url is None else url
     if database_exists(database_url):
         click.secho(f'skipping creation of database {database_url} because it already exist', fg='blue')
     else:
@@ -36,7 +37,7 @@ def initialize_database(url):
 @cli.command()
 def shell():
     """Creates a python interpreter to interact with pastebin modules"""
-    db = get_session(DATABASE_URL)
+    db = get_session(REAL_DATABASE_URL)
     register(db, transaction_manager=transaction.manager)
     with transaction.manager:
         code.interact(banner='Interactive pastebin console', exitmsg='Good bye!', local={
@@ -55,7 +56,7 @@ def shell():
 @click.option('-P', '--pseudo', prompt='Pseudo', help='your pseudo or nickname')
 def create_admin_user(first_name, last_name, pseudo, password, email):
     """Creates admin user"""
-    db = get_session(DATABASE_URL)
+    db = get_session(REAL_DATABASE_URL)
     register(db, transaction_manager=transaction.manager)
     with transaction.manager:
         user = User(email=email, pseudo=pseudo, first_name=first_name, last_name=last_name, admin=True)
@@ -68,4 +69,30 @@ def create_admin_user(first_name, last_name, pseudo, password, email):
         user.groups.append(default_group)
         db.add(user)
     db.close()
-    click.secho(f'created admin user {pseudo}!', fg='blue')
+    click.secho(f'created admin user {pseudo}!', fg='green')
+
+
+@cli.command('add-lang-to-db')
+def add_languages_to_db():
+    """Add supported pygments languages to the database"""
+    db = get_session(REAL_DATABASE_URL)
+    register(db, transaction_manager=transaction.manager)
+    with transaction.manager:
+        for lang in LANGUAGES:
+            language = Language(name=lang)
+            db.add(language)
+    db.close()
+    click.secho('successfully inserted languages to the database!', fg='green')
+
+
+@cli.command('add-styles-to-db')
+def add_styles_to_db():
+    """Add supported pygments styles to the database"""
+    db = get_session(REAL_DATABASE_URL)
+    register(db, transaction_manager=transaction.manager)
+    with transaction.manager:
+        for item in STYLES:
+            style = Style(name=item)
+            db.add(style)
+    db.close()
+    click.secho('successfully inserted styles to the database!', fg='green')

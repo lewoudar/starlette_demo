@@ -4,7 +4,7 @@ from sqlalchemy import Column, String, Text, Boolean, Enum
 
 from pastebin.meta import Base
 
-LANGUAGES = sorted([item[1][0] for item in get_all_lexers()])
+LANGUAGES = sorted(set([item[1][0] for item in get_all_lexers()]))
 STYLES = sorted([item for item in get_all_styles()])
 
 
