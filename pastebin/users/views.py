@@ -1,4 +1,5 @@
 import transaction
+from sqlalchemy.orm import Session
 from starlette.authentication import requires
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
@@ -18,7 +19,7 @@ class Users(HTTPEndpoint):
         return JSONResponse(self.user_schema.dump(users, many=True))
 
     async def post(self, request: Request) -> JSONResponse:
-        db = request.state.db
+        db: Session = request.state.db
         payload = await request.json()
         user: User = self.user_schema.load(payload)
         group = db.query(Group).filter_by(name=DEFAULT_USER_GROUP).one()

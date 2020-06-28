@@ -1,8 +1,7 @@
 import dateutil.parser
 import pytest
 
-from pastebin import app
-from .utils import assert_in_dict
+from .helpers import assert_in_dict
 
 
 @pytest.fixture(scope='module')
@@ -17,7 +16,7 @@ def user_data():
 
 
 def test_get_users(client):
-    response = client.get(app.url_path_for('user_list'))
+    response = client.get(client.app.url_path_for('user_list'))
     assert 200 == response.status_code
     data = [
         {
@@ -41,7 +40,7 @@ def test_get_users(client):
 
 
 def create_user(client, data):
-    return client.post(app.url_path_for('user_list'), json=data)
+    return client.post(client.app.url_path_for('user_list'), json=data)
 
 
 class TestPostUser:
@@ -85,7 +84,7 @@ class TestPostUser:
 
 
 def test_get_user(client):
-    response = client.get(app.url_path_for('user_detail', id=1))
+    response = client.get(client.app.url_path_for('user_detail', id=1))
     assert 200 == response.status_code
     data = {
         'first_name': 'Kevin',
@@ -101,13 +100,13 @@ def test_get_user(client):
 class TestPatchUser:
 
     def test_should_return_403_error_when_user_is_not_authenticated(self, client):
-        response = client.patch(app.url_path_for('user_detail', id=1))
+        response = client.patch(client.app.url_path_for('user_detail', id=1))
         assert 403 == response.status_code
 
     def test_should_return_403_error_when_user_does_not_have_ownership(self, client, user_data):
         create_user(client, user_data)
         changed = {'first_name': 'JA rule'}
-        response = client.patch(app.url_path_for('user_detail', id=1), json=changed, auth=('elliot', 'missy'))
+        response = client.patch(client.app.url_path_for('user_detail', id=1), json=changed, auth=('elliot', 'missy'))
         assert 403 == response.status_code
         assert {'detail': 'user elliot does not have rights to edit this resource'} == response.json()
 
@@ -115,13 +114,13 @@ class TestPatchUser:
     def test_should_return_401_error_when_user_is_not_recognized(self, client, auth, user_data):
         create_user(client, user_data)
         changed = {'first_name': 'JA rule'}
-        response = client.patch(app.url_path_for('user_detail', id=1), json=changed, auth=auth)
+        response = client.patch(client.app.url_path_for('user_detail', id=1), json=changed, auth=auth)
         assert 401 == response.status_code
         assert {'detail': 'pseudo or password incorrect'} == response.json()
 
     def test_should_return_400_error_when_payload_is_empty(self, client):
         data = {}
-        response = client.patch(app.url_path_for('user_detail', id=1), json=data, auth=('lewoudar', 'bar'))
+        response = client.patch(client.app.url_path_for('user_detail', id=1), json=data, auth=('lewoudar', 'bar'))
         assert 400 == response.status_code
         assert response.json() == {
             'detail': {
@@ -132,7 +131,7 @@ class TestPatchUser:
 
     def test_should_return_400_error_when_payload_is_incorrect(self, client):
         data = {'email': 'hell@fear'}
-        response = client.patch(app.url_path_for('user_detail', id=1), json=data, auth=('lewoudar', 'bar'))
+        response = client.patch(client.app.url_path_for('user_detail', id=1), json=data, auth=('lewoudar', 'bar'))
         assert 400 == response.status_code
         assert response.json() == {
             'detail': {
@@ -149,7 +148,7 @@ class TestPatchUser:
         response = create_user(client, user_data)
         user_id = response.json()['id']
         changed = {'first_name': 'JA rule'}
-        response = client.patch(app.url_path_for('user_detail', id=user_id), json=changed, auth=auth)
+        response = client.patch(client.app.url_path_for('user_detail', id=user_id), json=changed, auth=auth)
         assert 200 == response.status_code
         response_data = response.json()
         assert response_data['first_name'] == 'JA rule'
@@ -161,18 +160,18 @@ class TestPatchUser:
 class TestDeleteUser:
 
     def test_should_return_403_error_when_user_is_not_authenticated(self, client):
-        response = client.delete(app.url_path_for('user_detail', id=1))
+        response = client.delete(client.app.url_path_for('user_detail', id=1))
         assert 403 == response.status_code
 
     def test_should_return_403_error_when_user_does_not_have_ownership(self, client, user_data):
         create_user(client, user_data)
-        response = client.delete(app.url_path_for('user_detail', id=1), auth=('elliot', 'missy'))
+        response = client.delete(client.app.url_path_for('user_detail', id=1), auth=('elliot', 'missy'))
         assert 403 == response.status_code
         assert {'detail': 'user elliot does not have rights to edit this resource'} == response.json()
 
     @pytest.mark.parametrize('auth', [('foo', 'missy'), ('elliot', 'foo')])
     def test_should_return_401_error_when_user_is_not_recognized(self, client, user_data, auth):
-        response = client.delete(app.url_path_for('user_detail', id=1), auth=auth)
+        response = client.delete(client.app.url_path_for('user_detail', id=1), auth=auth)
         assert 401 == response.status_code
         assert {'detail': 'pseudo or password incorrect'} == response.json()
 
@@ -181,7 +180,7 @@ class TestDeleteUser:
         ('admin', 'admin')  # admin
     ])
     def test_should_delete_user_when_user_in_action_have_appropriate_rights(self, client, auth):
-        response = client.delete(app.url_path_for('user_detail', id=1), auth=auth)
+        response = client.delete(client.app.url_path_for('user_detail', id=1), auth=auth)
         assert 204 == response.status_code
-        response = client.get(app.url_path_for('user_detail', id=1))
+        response = client.get(client.app.url_path_for('user_detail', id=1))
         assert 404 == response.status_code

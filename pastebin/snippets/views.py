@@ -1,9 +1,12 @@
 from sqlalchemy.orm import Session
+from starlette.authentication import requires
+from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from pastebin.utils import get_like_string
-from .models import Language, Style
+from .models import Language, Style, Snippet
+from .schemas import DefaultSnippetSchema
 
 
 def get_languages(request: Request) -> JSONResponse:
@@ -24,3 +27,23 @@ def get_styles(request: Request) -> JSONResponse:
     else:
         styles = request.state.db.query(Style).all()
     return JSONResponse([style.name for style in styles])
+
+
+class Snippets(HTTPEndpoint):
+
+    @staticmethod
+    def get(request: Request) -> JSONResponse:
+        snippet_schema = DefaultSnippetSchema(context={'request': request})
+        snippets = request.state.db.query(Snippet).all()
+        return JSONResponse(snippet_schema.dump(snippets, many=True))
+
+    @requires(['authenticated', 'snippets:write'])
+    async def post(self, request: Request) -> JSONResponse:
+        db: Session = request.state.db
+        snippet_schema = DefaultSnippetSchema(context={'request': request})
+        payload = await request.json()
+        snippet: Snippet = snippet_schema.load(payload)
+        snippet.user = request.user
+        db.add(snippet)
+        db.flush()
+        return JSONResponse(snippet_schema.dump(snippet))

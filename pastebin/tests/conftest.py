@@ -9,7 +9,7 @@ from zope.sqlalchemy import register
 from pastebin import app
 from pastebin.settings import TEST_DATABASE_URL
 from pastebin.users.models import Base
-from .utils import create_test_objects
+from .helpers import create_test_objects
 
 
 @pytest.fixture(autouse=True)

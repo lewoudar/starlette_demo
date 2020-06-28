@@ -18,7 +18,7 @@ paths:
       description: Returns the list of users
       responses:
         '200':
-          description: Returns a json array of users
+          description: Returns a JSON array of users
           content:
             application/json:
               schema:
@@ -26,7 +26,7 @@ paths:
     post:
       tags:
         - users
-      description: Create a new user and returns its information
+      description: Creates a new user and returns its information
       requestBody:
         required: true
         content:
@@ -43,6 +43,19 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
   /users/{id}:
+    get:
+      tags:
+        - users
+      description: Get user information given a unique integer identifier.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Returns user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
     patch:
       tags:
         - users
@@ -86,6 +99,43 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /snippets/:
+    get:
+      tags:
+        - snippets
+      description: Returns the list of snippets
+      responses:
+        '200':
+          description: Returns a JSON array of users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snippets'
+    post:
+      tags:
+        - snippets
+      security:
+        - BasicAuth: []
+      description: Creates a new snippet and returns its information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Snippet'
+      responses:
+        '201':
+          description: Returns snippet information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snippet'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /snippets/languages:
     get:
       tags:
@@ -175,6 +225,47 @@ components:
       type: array
       items:
         type: string
+    Snippet:
+      type: object
+      properties:
+        title:
+          type: string
+          description: the snippet title
+          example: snippet title
+          minLength: 2
+          maxLength: 100
+        code:
+          type: string
+          description: the snippet code
+          example: print('hello world')
+        linenos:
+          type: boolean
+          description: True if you want line number for the highlighted code. Look at the route /snippets/{id}/highlight
+          example: true
+        language:
+          type: string
+          description: A language supported by the api. Look at the route /snippets/languages
+          example: python
+        style:
+          type: string
+          description: A style supported for the highlighted code. Look at the route /snippets/styles
+          example: friendly
+        created_at:
+          type: string
+          format: datetime
+          description: datetime represented in iso format
+          example: '2020-06-20T23:15:32'
+          readOnly: true
+      required:
+        - title
+        - code
+        - language
+        - style
+        - created_at
+    Snippets:
+      type: array
+      items:
+        $ref: '#/components/schemas/Snippet'
     SimpleError:
       type: object
       properties:

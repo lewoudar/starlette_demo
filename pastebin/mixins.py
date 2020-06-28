@@ -1,4 +1,4 @@
-from marshmallow import ValidationError
+from marshmallow import ValidationError, fields
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
 
@@ -25,7 +25,9 @@ class SAModelMixin:
             )
 
 
-class ErrorSchemaMixin:
+class SchemaMixin:
+    created_at = fields.DateTime(required=True, dump_only=True)
+
     @staticmethod
     def handle_error(exc: ValidationError, data: dict, **_) -> None:
         if '_schema' in exc.messages:
