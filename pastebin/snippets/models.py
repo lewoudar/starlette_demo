@@ -1,6 +1,7 @@
 from pygments.lexers import get_all_lexers
 from pygments.styles import get_all_styles
-from sqlalchemy import Column, String, Text, Boolean, Enum
+from sqlalchemy import Column, String, Text, Boolean, Enum, Integer, ForeignKey
+from sqlalchemy.orm import relationship
 
 from pastebin.meta import Base
 
@@ -22,3 +23,6 @@ class Snippet(Base):
     linenos = Column(Boolean, nullable=False, default=False)
     language = Column(Enum(*LANGUAGES, name='language'), nullable=False)
     style = Column(Enum(*STYLES, name='style'), nullable=False, default='friendly')
+    user_id = Column(Integer, ForeignKey('users.id'))
+
+    user = relationship('User', back_populates='snippets')

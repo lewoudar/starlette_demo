@@ -27,6 +27,8 @@ class User(Base):
     email = Column(EmailType, unique=True, index=True, nullable=False)
     password_hash = Column(String(200), name='password', nullable=False)
     admin = Column(Boolean, nullable=False, default=False)
+    # one to many User<->Snippets
+    snippets = relationship('Snippet', back_populates='user', cascade='all, delete, delete-orphan')
     # many to many User<->Group
     groups = relationship('Group', secondary=user_groups, back_populates='users')
     # non orm property useful for authentication
