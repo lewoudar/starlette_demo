@@ -26,6 +26,7 @@ class SAModelMixin:
 
 
 class SchemaMixin:
+    id = fields.Integer(required=True, dump_only=True)
     created_at = fields.DateTime(required=True, dump_only=True)
 
     @staticmethod

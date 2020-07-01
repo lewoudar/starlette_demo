@@ -54,6 +54,7 @@ def test_get_snippets(client):
     assert response.status_code == 200
     assert response.json() == [
         {
+            'id': 1,
             'title': 'first snippet',
             'code': 'print("hello world!")',
             'linenos': True,
@@ -105,6 +106,7 @@ class TestPostSnippet:
         assert response.status_code == 200
         result = response.json()
         assert_in_dict(snippet_data, result)
+        assert result['id'] == 2
         assert result['linenos'] == linenos
         try:
             dateutil.parser.parse(result['created_at'])

@@ -7,7 +7,6 @@ from .models import User
 
 
 class DefaultUserSchema(SchemaMixin, Schema):
-    id = fields.Integer(required=True, dump_only=True)
     first_name = fields.String(required=True, validate=validate.Length(min=2, max=100))
     last_name = fields.String(required=True, validate=validate.Length(min=2, max=100))
     pseudo = fields.String(required=True, validate=validate.Length(min=2, max=100))
@@ -24,7 +23,6 @@ class DefaultUserSchema(SchemaMixin, Schema):
 
 # the difference here is that no field is required but there must be at least one field in the payload
 class PatchUserSchema(SchemaMixin, Schema):
-    id = fields.Integer(dump_only=True)
     first_name = fields.String(validate=validate.Length(min=2, max=100))
     last_name = fields.String(validate=validate.Length(min=2, max=100))
     pseudo = fields.String(validate=validate.Length(min=2, max=100))
