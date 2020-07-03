@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from marshmallow import Schema, fields, validate, validates_schema, ValidationError, post_load
 
 from pastebin.mixins import SchemaMixin
@@ -36,13 +34,9 @@ class PatchUserSchema(SchemaMixin, Schema):
 
     @post_load()
     def get_updated_user(self, data: dict, **_) -> User:
-        user: User = self.context['user']
         password = data.pop('password', None)
-
+        user: User = self.get_updated_model(data)
         if password is not None:
             user.set_password(password)
-        for key, value in data.items():
-            setattr(user, key, value)
 
-        user.updated_at = datetime.utcnow()
         return user

@@ -72,7 +72,7 @@ paths:
               $ref: '#/components/schemas/User'
       responses:
         '200':
-          description: Returns updated user
+          description: Returns updated user.
           content:
             application/json:
               schema:
@@ -90,7 +90,7 @@ paths:
         - BasicAuth: []
       parameters:
         - $ref: '#/components/parameters/IdParam'
-      description: Deletes a user
+      description: Deletes a user.
       responses:
         '204':
           $ref: '#/components/responses/DeleteResponse'
@@ -132,6 +132,62 @@ paths:
                 $ref: '#/components/schemas/Snippet'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /snippets/{id}:
+    get:
+      tags:
+        - snippets
+      description: Get snippet information given a unique integer identifier.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Returns snippet information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snippet'
+    patch:
+      tags:
+        - snippets
+      security:
+        - BasicAuth: []
+      description: Update snippet properties. You can update one or multiple properties at the same time.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Snippet'
+      responses:
+        '200':
+          description: Returns updated snippet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Snippet'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      tags:
+        - snippets
+      security:
+        - BasicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      description: Deletes a snippet.
+      responses:
+        '204':
+          $ref: '#/components/responses/DeleteResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':

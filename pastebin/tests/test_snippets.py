@@ -66,10 +66,10 @@ def test_get_snippets(client):
     ]
 
 
-def create_snippet(client, data, linenos=True):
+def create_snippet(client, data, linenos=True, auth=('lewoudar', 'bar')):
     if linenos:
         data['linenos'] = True
-    return client.post(client.app.url_path_for('snippet_list'), json=data, auth=('lewoudar', 'bar'))
+    return client.post(client.app.url_path_for('snippet_list'), json=data, auth=auth)
 
 
 class TestPostSnippet:
@@ -112,3 +112,104 @@ class TestPostSnippet:
             dateutil.parser.parse(result['created_at'])
         except (KeyError, ValueError):
             pytest.fail('fail to retrieve create_at information')
+
+
+def test_get_snippet(client):
+    response = client.get(client.app.url_path_for('snippet_detail', id=1))
+    assert response.status_code == 200
+    assert response.json() == {
+        'id': 1,
+        'title': 'first snippet',
+        'code': 'print("hello world!")',
+        'linenos': True,
+        'language': 'python',
+        'style': 'friendly',
+        'user': f'{client.base_url}{client.app.url_path_for("user_detail", id=1)}',
+        'created_at': '2020-06-28T12:35:00'
+    }
+
+
+class TestPatchSnippet:
+
+    def test_should_return_403_error_when_user_is_not_authenticated(self, client):
+        response = client.patch(client.app.url_path_for('snippet_detail', id=1))
+        assert 403 == response.status_code
+
+    def test_should_return_403_error_when_user_does_not_have_ownership(self, client, snippet_data):
+        response = create_snippet(client, snippet_data, auth=('admin', 'admin'))
+        snippet_id = response.json()['id']
+        data = {'linenos': True}
+        auth = ('lewoudar', 'bar')
+        response = client.patch(client.app.url_path_for('snippet_detail', id=snippet_id), json=data, auth=auth)
+
+        assert response.status_code == 403
+
+    def test_should_return_401_error_when_user_is_not_recognized(self, client):
+        response = client.patch(client.app.url_path_for('snippet_detail', id=1), auth=('foo', 'bar'))
+        assert response.status_code == 401
+
+    def test_should_return_400_error_when_payload_is_incorrect(self, client):
+        data = {
+            'linenos': 2,
+            'title': 'title',
+            'language': 'python',
+            'code': 'hello'
+        }
+        response = client.patch(client.app.url_path_for('snippet_detail', id=1), json=data, auth=('lewoudar', 'bar'))
+        assert response.status_code == 400
+        assert response.json() == {
+            'detail': {
+                'input': data,
+                'errors': {
+                    'linenos': ['Not a valid boolean.'],
+                    'style': ['Missing data for required field.']
+                }
+            }
+        }
+
+    @pytest.mark.parametrize('auth', [
+        ('lewoudar', 'bar'),  # normal user
+        ('admin', 'admin')  # admin user
+    ])
+    def test_should_return_correct_updated_data(self, client, auth):
+        data = {'style': 'monokai'}
+        response = client.patch(client.app.url_path_for('snippet_detail', id=1), json=data, auth=auth)
+        assert response.status_code == 200
+        assert response.json() == {
+            'id': 1,
+            'title': 'first snippet',
+            'code': 'print("hello world!")',
+            'linenos': True,
+            'language': 'python',
+            'style': 'monokai',
+            'user': f'{client.base_url}{client.app.url_path_for("user_detail", id=1)}',
+            'created_at': '2020-06-28T12:35:00'
+        }
+
+
+class TestDeleteSnippet:
+
+    def test_should_return_403_error_when_user_is_not_authenticated(self, client):
+        response = client.delete(client.app.url_path_for('snippet_detail', id=1))
+        assert response.status_code == 403
+
+    def test_should_return_403_error_when_user_does_not_have_ownership(self, client, snippet_data):
+        response = create_snippet(client, snippet_data, auth=('admin', 'admin'))
+        snippet_id = response.json()['id']
+        response = client.delete(client.app.url_path_for('snippet_detail', id=snippet_id), auth=('lewoudar', 'bar'))
+
+        assert response.status_code == 403
+
+    def test_should_return_401_error_when_user_is_not_recognized(self, client):
+        response = client.delete(client.app.url_path_for('snippet_detail', id=1), auth=('foo', 'bar'))
+        assert response.status_code == 401
+
+    @pytest.mark.parametrize('auth', [
+        ('lewoudar', 'bar'),  # normal user
+        ('admin', 'admin')  # admin user
+    ])
+    def test_should_correctly_delete_snippet(self, client, auth):
+        response = client.delete(client.app.url_path_for('snippet_detail', id=1), auth=auth)
+        assert response.status_code == 204
+        response = client.get(client.app.url_path_for('snippet_detail', id=1))
+        assert response.status_code == 404

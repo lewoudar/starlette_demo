@@ -41,7 +41,7 @@ class UserInfo(SAModelMixin, HTTPEndpoint):
         user = self.get_model_by_id(request, User, request.path_params['id'])
         self.check_ownership(request, user)
         payload = await request.json()
-        user_schema = PatchUserSchema(context={'user': user})
+        user_schema = PatchUserSchema(context={'model': user})
         user: User = user_schema.load(payload)
         request.state.db.flush()
         return JSONResponse(user_schema.dump(user))

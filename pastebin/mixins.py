@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from marshmallow import ValidationError, fields
 from starlette.exceptions import HTTPException
 from starlette.requests import Request
@@ -37,3 +39,10 @@ class SchemaMixin:
             'input': data,
             'errors': exc.messages
         })
+
+    def get_updated_model(self, data: dict) -> Model:
+        model: Model = self.context['model']
+        for key, value in data.items():
+            setattr(model, key, value)
+        model.updated_at = datetime.utcnow()
+        return model
