@@ -220,6 +220,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Styles'
+  /snippets/{id}/highlight:
+    get:
+      tags:
+        - snippets
+      description: Get snippet information given a unique integer identifier.
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Returns highlighted snippet.
+          content:
+            text/html:
+              schema:
+                type: string
 
 
 components:
@@ -317,6 +331,18 @@ components:
           format: datetime
           description: datetime represented in iso format
           example: '2020-06-20T23:15:32'
+          readOnly: true
+        user:
+          type: string
+          format: url
+          description: an url pointing to owner information
+          example: http://localhost:8000/users/1
+          readOnly: true
+        highlight:
+          type: string
+          format: url
+          description: an url pointing to the highlighted snippet code
+          example: http://localhost:8000/snippets/1/highlight
           readOnly: true
       required:
         - id

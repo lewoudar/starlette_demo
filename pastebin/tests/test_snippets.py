@@ -60,6 +60,7 @@ def test_get_snippets(client):
             'linenos': True,
             'language': 'python',
             'style': 'friendly',
+            'highlight': f'{client.base_url}{client.app.url_path_for("snippet_highlight", id=1)}',
             'user': f'{client.base_url}{client.app.url_path_for("user_detail", id=1)}',
             'created_at': '2020-06-28T12:35:00'
         }
@@ -124,6 +125,7 @@ def test_get_snippet(client):
         'linenos': True,
         'language': 'python',
         'style': 'friendly',
+        'highlight': f'{client.base_url}{client.app.url_path_for("snippet_highlight", id=1)}',
         'user': f'{client.base_url}{client.app.url_path_for("user_detail", id=1)}',
         'created_at': '2020-06-28T12:35:00'
     }
@@ -161,8 +163,7 @@ class TestPatchSnippet:
             'detail': {
                 'input': data,
                 'errors': {
-                    'linenos': ['Not a valid boolean.'],
-                    'style': ['Missing data for required field.']
+                    'linenos': ['Not a valid boolean.']
                 }
             }
         }
@@ -182,6 +183,7 @@ class TestPatchSnippet:
             'linenos': True,
             'language': 'python',
             'style': 'monokai',
+            'highlight': f'{client.base_url}{client.app.url_path_for("snippet_highlight", id=1)}',
             'user': f'{client.base_url}{client.app.url_path_for("user_detail", id=1)}',
             'created_at': '2020-06-28T12:35:00'
         }
