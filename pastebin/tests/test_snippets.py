@@ -213,3 +213,14 @@ class TestDeleteSnippet:
         assert response.status_code == 204
         response = client.get(client.app.url_path_for('snippet_detail', id=1))
         assert response.status_code == 404
+
+
+@pytest.mark.skip('seems there is an issue with the test client when using templating..')
+def test_get_highlighted(client):
+    response = client.get(client.app.url_path_for('snippet_highlight', id=1))
+    assert response.status_code == 200
+    assert response.template.name == 'highlight.jinja2'
+    assert 'request' in response.context
+    assert response.context['title'] == 'first snippet'
+    assert '<h2>first snippet</h2>' in response.text
+    assert 'hello world' in response.text

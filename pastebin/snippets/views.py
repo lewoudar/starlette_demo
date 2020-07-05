@@ -1,9 +1,12 @@
 import transaction
+from pygments import highlight
+from pygments.formatters.html import HtmlFormatter
+from pygments.lexers import get_lexer_by_name
 from sqlalchemy.orm import Session
 from starlette.authentication import requires
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
-from starlette.responses import JSONResponse, PlainTextResponse
+from starlette.responses import JSONResponse, PlainTextResponse, Response
 
 from pastebin.utils import get_like_string
 from .models import Language, Style, Snippet
@@ -76,3 +79,17 @@ class SnippetInfo(SAModelMixin, HTTPEndpoint):
         request.state.db.delete(snippet)
         transaction.commit()
         return PlainTextResponse('', status_code=204)
+
+
+class SnippetHighlight(SAModelMixin, HTTPEndpoint):
+
+    def get(self, request: Request) -> Response:
+        snippet = self.get_model_by_id(request, Snippet, request.path_params['id'])
+        lexer = get_lexer_by_name(snippet.language)
+        formatter = HtmlFormatter(title=snippet.title, style=snippet.style, linenos=snippet.linenos)
+        context = {
+            'request': request,
+            'title': snippet.title,
+            'highlighted': highlight(snippet.code, lexer, formatter)
+        }
+        return request.app.state.templates.TemplateResponse('highlight.jinja2', context)

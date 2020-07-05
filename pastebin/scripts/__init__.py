@@ -1,7 +1,9 @@
 import code
+from pathlib import Path
 
 import click
 import transaction
+from pygments.formatters.html import HtmlFormatter
 from sqlalchemy import create_engine
 from sqlalchemy_utils import create_database, database_exists
 from zope.sqlalchemy import register
@@ -96,3 +98,24 @@ def add_styles_to_db():
             db.add(style)
     db.close()
     click.secho('successfully inserted styles to the database!', fg='green')
+
+
+@cli.command('highlight-css')
+def highlight_css():
+    """Create css file style.css in pastebin/static/css folder"""
+    static_path = Path(__file__).parent.parent.parent / 'static'
+    click.echo(f'{static_path.absolute()}')
+    css_path = static_path / 'css'
+    if not static_path.exists():
+        css_path.mkdir(parents=True, exist_ok=True)
+        click.echo('created static folder with a chidl css folder')
+
+    if not static_path.is_dir():
+        raise click.UsageError('pastebin/static path exists and it is not a folder, please change it')
+
+    if not css_path.exists():
+        css_path.mkdir()
+        click.echo('created static/css folder')
+    style_path = css_path / 'style.css'
+    style_path.write_text(HtmlFormatter().get_style_defs('.highlight'))
+    click.secho('static/css/style.css file was successfully created!', fg='green')

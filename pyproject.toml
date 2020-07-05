@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A demo reimplementing the snippets tutorial of Django Rest Framework"
 authors = ["lewoudar <lewoudar@gmail.com>"]
 license = "MIT"
-include = ["pastebin/openapi.yml"]
+include = ["pastebin/openapi.yml", "templates", "static"]
 
 packages = [
     {include = "pastebin"}
@@ -27,6 +27,8 @@ colorama = "^0.4.3"
 marshmallow = "^3.6.1"
 pyyaml = "^5.3.1"
 pygments = "^2.6.1"
+jinja2 = "^2.11.2"
+aiofiles = "^0.5.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.2"
