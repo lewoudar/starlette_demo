@@ -1,6 +1,28 @@
 """Module that contain some helper functions"""
+import asyncio
+import typing
+from enum import Enum, auto
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+CHANNELS: typing.Set[asyncio.Queue] = set()
+
+
+class Operation(Enum):
+    CREATE = auto()
+    UPDATE = auto()
+    DELETE = auto()
+
+
+class Model(Enum):
+    USERS = auto()
+    SNIPPETS = auto()
+
+
+async def send_group(operation: Operation, model: Model, message: typing.Any) -> None:
+    for channel in CHANNELS:
+        await channel.put({'operation': operation.name, 'model': model.name.lower(), 'payload': message})
 
 
 def get_session(database_url):

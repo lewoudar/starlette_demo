@@ -7,6 +7,7 @@ from starlette.responses import JSONResponse, PlainTextResponse
 
 from pastebin.mixins import SAModelMixin
 from pastebin.settings import DEFAULT_USER_GROUP
+from pastebin.utils import send_group, Operation, Model
 from .models import User, Group
 from .schemas import PatchUserSchema, DefaultUserSchema
 
@@ -26,6 +27,8 @@ class Users(HTTPEndpoint):
         user.groups.append(group)
         db.add(user)
         db.flush()
+        # websocket feed
+        await send_group(Operation.CREATE, Model.USERS, {'id': user.id, 'pseudo': user.pseudo})
         return JSONResponse(self.user_schema.dump(user), status_code=201)
 
 
@@ -44,12 +47,16 @@ class UserInfo(SAModelMixin, HTTPEndpoint):
         user_schema = PatchUserSchema(context={'model': user})
         user: User = user_schema.load(payload)
         request.state.db.flush()
+        # websocket feed
+        await send_group(Operation.UPDATE, Model.USERS, {'id': user.id, 'pseudo': user.pseudo})
         return JSONResponse(user_schema.dump(user))
 
     @requires(['authenticated', 'users:write'])
-    def delete(self, request: Request) -> PlainTextResponse:
+    async def delete(self, request: Request) -> PlainTextResponse:
         user = self.get_model_by_id(request, User, request.path_params['id'])
         self.check_ownership(request, user)
+        # websocket feed
+        await send_group(Operation.DELETE, Model.USERS, {'id': user.id, 'pseudo': user.pseudo})
         request.state.db.delete(user)
         transaction.commit()
         return PlainTextResponse('', status_code=204)

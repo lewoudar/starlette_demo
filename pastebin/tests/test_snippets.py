@@ -3,6 +3,7 @@ import pytest
 
 from pastebin.snippets.models import LANGUAGES, STYLES
 from .helpers import assert_in_dict
+from ..utils import Operation, Model
 
 
 @pytest.fixture()
@@ -114,6 +115,19 @@ class TestPostSnippet:
         except (KeyError, ValueError):
             pytest.fail('fail to retrieve create_at information')
 
+    def test_websocket_feedback_is_sent(self, client, snippet_data):
+        with client.websocket_connect('/feed') as websocket:
+            response = create_snippet(client, snippet_data)
+            assert websocket.receive_json() == {
+                'operation': Operation.CREATE.name,
+                'model': Model.SNIPPETS.name.lower(),
+                'payload': {
+                    'id': response.json()['id'],
+                    'owner': 'lewoudar',
+                    'title': snippet_data['title']
+                }
+            }
+
 
 def test_get_snippet(client):
     response = client.get(client.app.url_path_for('snippet_detail', id=1))
@@ -188,6 +202,21 @@ class TestPatchSnippet:
             'created_at': '2020-06-28T12:35:00'
         }
 
+    def test_websocket_feedback_is_sent(self, client):
+        with client.websocket_connect('/feed') as websocket:
+            data = {'style': 'default'}
+            auth = ('lewoudar', 'bar')
+            client.patch(client.app.url_path_for('snippet_detail', id=1), json=data, auth=auth)
+            assert websocket.receive_json() == {
+                'operation': Operation.UPDATE.name,
+                'model': Model.SNIPPETS.name.lower(),
+                'payload': {
+                    'id': 1,
+                    'owner': 'lewoudar',
+                    'title': 'first snippet'
+                }
+            }
+
 
 class TestDeleteSnippet:
 
@@ -215,6 +244,19 @@ class TestDeleteSnippet:
         assert response.status_code == 204
         response = client.get(client.app.url_path_for('snippet_detail', id=1))
         assert response.status_code == 404
+
+    def test_websocket_feedback_is_sent(self, client):
+        with client.websocket_connect('/feed') as websocket:
+            client.delete(client.app.url_path_for('snippet_detail', id=1), auth=('lewoudar', 'bar'))
+            assert websocket.receive_json() == {
+                'operation': Operation.DELETE.name,
+                'model': Model.SNIPPETS.name.lower(),
+                'payload': {
+                    'id': 1,
+                    'owner': 'lewoudar',
+                    'title': 'first snippet'
+                }
+            }
 
 
 @pytest.mark.skip('seems there is an issue with the test client when using templating..')

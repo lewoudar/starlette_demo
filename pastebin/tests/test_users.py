@@ -2,6 +2,7 @@ import dateutil.parser
 import pytest
 
 from .helpers import assert_in_dict
+from ..utils import Operation, Model
 
 
 @pytest.fixture(scope='module')
@@ -82,6 +83,18 @@ class TestPostUser:
         except (KeyError, ValueError):
             pytest.fail('fail to retrieve create_at information')
 
+    def test_websocket_feedback_is_sent(self, client, user_data):
+        with client.websocket_connect('/feed') as websocket:
+            response = create_user(client, user_data)
+            assert websocket.receive_json() == {
+                'operation': Operation.CREATE.name,
+                'model': Model.USERS.name.lower(),
+                'payload': {
+                    'id': response.json()['id'],
+                    'pseudo': user_data['pseudo']
+                }
+            }
+
 
 def test_get_user(client):
     response = client.get(client.app.url_path_for('user_detail', id=1))
@@ -156,6 +169,20 @@ class TestPatchUser:
         for item in ['last_name', 'pseudo', 'email']:
             assert response_data[item] == user_data[item]
 
+    def test_websocket_feedback_is_sent(self, client):
+        with client.websocket_connect('/feed') as websocket:
+            changed = {'email': 'lewoudar@hello.com'}
+            auth = ('lewoudar', 'bar')
+            client.patch(client.app.url_path_for('user_detail', id=1), json=changed, auth=auth)
+            assert websocket.receive_json() == {
+                'operation': Operation.UPDATE.name,
+                'model': Model.USERS.name.lower(),
+                'payload': {
+                    'id': 1,
+                    'pseudo': 'lewoudar'
+                }
+            }
+
 
 class TestDeleteUser:
 
@@ -184,3 +211,15 @@ class TestDeleteUser:
         assert 204 == response.status_code
         response = client.get(client.app.url_path_for('user_detail', id=1))
         assert 404 == response.status_code
+
+    def test_websocket_feedback_is_sent(self, client):
+        with client.websocket_connect('/feed') as websocket:
+            client.delete(client.app.url_path_for('user_detail', id=1), auth=('lewoudar', 'bar'))
+            assert websocket.receive_json() == {
+                'operation': Operation.DELETE.name,
+                'model': Model.USERS.name.lower(),
+                'payload': {
+                    'id': 1,
+                    'pseudo': 'lewoudar'
+                }
+            }

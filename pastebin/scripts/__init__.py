@@ -1,9 +1,15 @@
+import asyncio
 import code
+import json
 from pathlib import Path
 
 import click
 import transaction
+import websockets
+from pygments import highlight
+from pygments.formatters import get_formatter_by_name
 from pygments.formatters.html import HtmlFormatter
+from pygments.lexers import get_lexer_by_name
 from sqlalchemy import create_engine
 from sqlalchemy_utils import create_database, database_exists
 from zope.sqlalchemy import register
@@ -119,3 +125,24 @@ def highlight_css():
     style_path = css_path / 'style.css'
     style_path.write_text(HtmlFormatter().get_style_defs('.highlight'))
     click.secho('static/css/style.css file was successfully created!', fg='green')
+
+
+@cli.command()
+@click.option('-u', '--url', default='ws://localhost:8000/feed')
+def feed(url):
+    """Print websocket information when an event happens in the application."""
+
+    async def _feed(uri):
+        lexer = get_lexer_by_name('json')
+        formatter = get_formatter_by_name('console')
+        click.secho('listening for events\n', fg='blue')
+        try:
+            async with websockets.connect(uri) as websocket:
+                while True:
+                    data = json.loads(await websocket.recv())
+                    click.echo(highlight(json.dumps(data, indent=4), lexer, formatter))
+                    click.echo('==NEXT EVENT==\n')
+        except websockets.WebSocketException as e:
+            click.echo(e)
+
+    asyncio.run(_feed(url))

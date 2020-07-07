@@ -8,7 +8,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse, Response
 
-from pastebin.utils import get_like_string
+from pastebin.utils import get_like_string, send_group, Operation, Model
 from .models import Language, Style, Snippet
 from .schemas import DefaultSnippetSchema, PatchSnippetSchema
 from ..mixins import SAModelMixin
@@ -51,6 +51,12 @@ class Snippets(HTTPEndpoint):
         snippet.user = request.user
         db.add(snippet)
         db.flush()
+        # websocket feed
+        await send_group(Operation.CREATE, Model.SNIPPETS, {
+            'id': snippet.id,
+            'title': snippet.title,
+            'owner': snippet.user.pseudo
+        })
         return JSONResponse(snippet_schema.dump(snippet))
 
 
@@ -70,12 +76,24 @@ class SnippetInfo(SAModelMixin, HTTPEndpoint):
         payload = await request.json()
         snippet: Snippet = snippet_schema.load(payload)
         request.state.db.flush()
+        # websocket feed
+        await send_group(Operation.UPDATE, Model.SNIPPETS, {
+            'id': snippet.id,
+            'title': snippet.title,
+            'owner': snippet.user.pseudo
+        })
         return JSONResponse(snippet_schema.dump(snippet))
 
     @requires(['authenticated', 'snippets:write'])
-    def delete(self, request: Request) -> PlainTextResponse:
+    async def delete(self, request: Request) -> PlainTextResponse:
         snippet: Snippet = self.get_model_by_id(request, Snippet, request.path_params['id'])
         self.check_ownership(request, snippet.user)
+        # websocket feed
+        await send_group(Operation.DELETE, Model.SNIPPETS, {
+            'id': snippet.id,
+            'title': snippet.title,
+            'owner': snippet.user.pseudo
+        })
         request.state.db.delete(snippet)
         transaction.commit()
         return PlainTextResponse('', status_code=204)
