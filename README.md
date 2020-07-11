@@ -22,6 +22,8 @@ when testing and setting it by hand on my terminal to `TESTING=false` before lau
 `./pastebin/alembic.ini`, mainly you need to change the key `sqlalchemy.url` to the database path.
 - **DEFAULT_USER_GROUP**: a string representing the group where common users will be placed. I just use `default_user` but you
 can put whatever you want.
+- **ITEMS_PER_PAGE**: a positive integer representing items to list when getting collection items (pagination). If it is
+not present, it defaults to ten.
 
 
 ## CLI

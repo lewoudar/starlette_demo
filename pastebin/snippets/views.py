@@ -8,7 +8,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse, Response
 
-from pastebin.utils import get_like_string, send_group, Operation, Model
+from pastebin.utils import get_like_string, send_group, Operation, Model, Paginator
 from .models import Language, Style, Snippet
 from .schemas import DefaultSnippetSchema, PatchSnippetSchema
 from ..mixins import SAModelMixin
@@ -38,9 +38,8 @@ class Snippets(HTTPEndpoint):
 
     @staticmethod
     def get(request: Request) -> JSONResponse:
-        snippet_schema = DefaultSnippetSchema(context={'request': request})
-        snippets = request.state.db.query(Snippet).all()
-        return JSONResponse(snippet_schema.dump(snippets, many=True))
+        paginator = Paginator(request, Snippet, DefaultSnippetSchema(context={'request': request}))
+        return JSONResponse(paginator.render())
 
     @requires(['authenticated', 'snippets:write'])
     async def post(self, request: Request) -> JSONResponse:

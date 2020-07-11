@@ -52,8 +52,10 @@ class TestGetStyles:
 
 def test_get_snippets(client):
     response = client.get(client.app.url_path_for('snippet_list'))
+    result = response.json()
+
     assert response.status_code == 200
-    assert response.json() == [
+    assert result['items'] == [
         {
             'id': 1,
             'title': 'first snippet',
@@ -66,6 +68,8 @@ def test_get_snippets(client):
             'created_at': '2020-06-28T12:35:00'
         }
     ]
+    assert result['previous'] is None
+    assert result['next'] is None
 
 
 def create_snippet(client, data, linenos=True, auth=('lewoudar', 'bar')):

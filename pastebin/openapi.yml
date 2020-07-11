@@ -15,14 +15,14 @@ paths:
     get:
       tags:
         - users
-      description: Returns the list of users
+      description: Returns a page of users
       responses:
         '200':
-          description: Returns a JSON array of users
+          description: Returns a page of users
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Users'
+                $ref: '#/components/schemas/UserPage'
     post:
       tags:
         - users
@@ -103,14 +103,14 @@ paths:
     get:
       tags:
         - snippets
-      description: Returns the list of snippets
+      description: Returns a page of snippets
       responses:
         '200':
-          description: Returns a JSON array of users
+          description: Returns a page of snippets
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Snippets'
+                $ref: '#/components/schemas/SnippetPage'
     post:
       tags:
         - snippets
@@ -284,10 +284,25 @@ components:
         - first_name
         - last_name
         - created_at
-    Users:
-      type: array
-      items:
-        $ref: '#/components/schemas/User'
+    UserPage:
+      type: object
+      properties:
+        previous:
+          type: string
+          description: Optional url of the previous page of results. Can be null or a string.
+          example: http://localhost:8000/users/?page=1
+        next:
+          type: string
+          description: Optional url of the next page of results. Can be null or a string.
+          example: http://localhost:8000/users/?page=2
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+      required:
+        - previous
+        - next
+        - items
     Languages:
       type: array
       items:
@@ -351,10 +366,25 @@ components:
         - language
         - style
         - created_at
-    Snippets:
-      type: array
-      items:
-        $ref: '#/components/schemas/Snippet'
+    SnippetPage:
+      type: object
+      properties:
+        previous:
+          type: string
+          description: Optional url of the previous page of results. Can be null or a string.
+          example: http://localhost:8000/snippets/?page=1
+        next:
+          type: string
+          description: Optional url of the next page of results. Can be null or a string.
+          example: http://localhost:8000/snippets/?page=2
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Snippet'
+      required:
+        - previous
+        - next
+        - items
     SimpleError:
       type: object
       properties:

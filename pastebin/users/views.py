@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse, PlainTextResponse
 
 from pastebin.mixins import SAModelMixin
 from pastebin.settings import DEFAULT_USER_GROUP
-from pastebin.utils import send_group, Operation, Model
+from pastebin.utils import send_group, Operation, Model, Paginator
 from .models import User, Group
 from .schemas import PatchUserSchema, DefaultUserSchema
 
@@ -16,8 +16,8 @@ class Users(HTTPEndpoint):
     user_schema = DefaultUserSchema()
 
     def get(self, request: Request) -> JSONResponse:
-        users = request.state.db.query(User).all()
-        return JSONResponse(self.user_schema.dump(users, many=True))
+        paginator = Paginator(request, User, self.user_schema)
+        return JSONResponse(paginator.render())
 
     async def post(self, request: Request) -> JSONResponse:
         db: Session = request.state.db

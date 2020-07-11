@@ -18,7 +18,7 @@ def user_data():
 
 def test_get_users(client):
     response = client.get(client.app.url_path_for('user_list'))
-    assert 200 == response.status_code
+    result = response.json()
     data = [
         {
             'first_name': 'Kevin',
@@ -37,7 +37,11 @@ def test_get_users(client):
             'id': 2
         }
     ]
-    assert data == response.json()
+
+    assert 200 == response.status_code
+    assert data == result['items']
+    assert result['previous'] is None
+    assert result['next'] is None
 
 
 def create_user(client, data):
